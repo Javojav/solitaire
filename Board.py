@@ -22,6 +22,10 @@ class Board:
         self.numberOfCards = config['numberOfCards']
 
         duplicates = self.numberOfCards//self.rank//self.suits # cards that exist multiple times 
+        
+        if duplicates == 0:
+            assert False, "Not enough cards for the given rank and suits"
+        
         self.cards = [Card(card, suit) for _ in range(duplicates) for suit in range(self.suits) for card in range(1, self.rank+1)]
 
         self.completedPiles = 0
@@ -47,8 +51,11 @@ class Board:
                     self.turnOverBottomCards()
                     return
                 pile.insert(0, self.cards.pop())
+
                 self.checkPileCompletion(pile)
+
                 pattern[i] -= 1
+
         if sum(pattern) != 0:
             self.dealCards(pattern=pattern)
         
@@ -75,23 +82,29 @@ class Board:
         return True
 
 
+    def checkSuit(self, pile, amount):
+        suit = pile[0].suit
+        for i in range(amount):
+            if pile[i].suit != suit:
+                return False
+        return True
+    
+
     def isMoveLegal(self, fromPile, toPile, amount):
-        if fromPile < 0 or fromPile > len(self.piles) - 1:
+        if fromPile < 0 or fromPile > len(self.piles) - 1: # if the pile is not in the board
             return False
 
-        if toPile < 0 or toPile > len(self.piles) - 1:
+        if toPile < 0 or toPile > len(self.piles) - 1: # if the pile is not in the board
             return False
 
-        if fromPile == toPile:
+        if fromPile == toPile: # if the pile is the same
             return False
 
-        if amount > len(self.piles[fromPile]):
+        if amount > len(self.piles[fromPile]): # if the amount of cards to move is greater than the amount of cards in the pile
             return False
         
-        suit = self.piles[fromPile][0].suit
-        for i in range(amount):
-            if self.piles[fromPile][i].suit != suit:
-                return False
+        if not self.checkSuit(self.piles[fromPile], amount): # if the suit of the cards is not the same
+            return False
 
         for i in range(amount):
             if self.piles[fromPile][i].faceUp == False:
@@ -114,6 +127,10 @@ class Board:
 
         suit = pile[0].suit
         sumacion = 0
+
+        if self.checkSuit(pile, self.rank) == False:
+            return pile
+
         for idx, card in enumerate(pile):
             if idx > self.rank:
                 break
@@ -121,8 +138,6 @@ class Board:
             if card.faceUp == False:
                 break
 
-            if card.suit != suit:
-                break
             sumacion += card.card
 
         if sumacion == ranksum:
