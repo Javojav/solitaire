@@ -84,9 +84,14 @@ class Board:
 
     def checkSuit(self, pile, amount):
         suit = pile[0].suit
+
+        if len(pile) < amount:
+            return False
+
         for i in range(amount):
             if pile[i].suit != suit:
                 return False
+            
         return True
     
 

@@ -26,6 +26,8 @@ def paintPileNumber(Numbers):
     for idx in range(Numbers):
         sys.stdout.write(f"{idx} ")
 
+    sys.stdout.write("\n")
+
 
 def drawBoard(board, message=""):
     graphic = board.graphic
@@ -36,7 +38,7 @@ def drawBoard(board, message=""):
     sys.stdout.write(f"Completed piles: {board.completedPiles} \n")
     sys.stdout.write(f"Deals left: {math.ceil(len(board.cards) / pileNumber) } \n\n")
     
-    if not bool(graphic["PileNumberAtTheBottom"]):
+    if bool(graphic["PileNumberAtTheTop"]):
         paintPileNumber(pileNumber)
     
     sys.stdout.write("\n")
@@ -63,7 +65,7 @@ def drawBoard(board, message=""):
     if bool(graphic["PileNumberAtTheBottom"]):
         paintPileNumber(pileNumber)
 
-    sys.stdout.write(f"\n{message}\n")
+    sys.stdout.write(f"{message}\n")
     sys.stdout.write(f"\nh for help: \n")
     sys.stdout.write(f"\nEnter move: \n")
     sys.stdout.flush()
