@@ -1,4 +1,4 @@
-import Board
+import SpiderBoard as Board
 import display
 
 
@@ -38,7 +38,7 @@ def controls(board):
     ret = True
 
     if action == "restart":
-        board = Board.Board()
+        board = Board.SpiderBoard()
         board.startGame()
 
     if action == "help":
@@ -60,7 +60,7 @@ def controls(board):
 
 
 def main():
-    board = Board.Board()
+    board = Board.SpiderBoard()
     board.startGame()
     message = ""
 

@@ -1,41 +1,140 @@
+import Cards
 import json
 import random
 
-class Card:
-    def __init__(self, card, suit):
-        self.card = card
-        self.suit = suit
-        self.faceUp = False
+class Pile:
+    def __init__(self):
+        self.cards = []
+
+        self.moveRules = []
+        self.stackCompleteRules = []
+
     
+    def addCards(self, cards):
+        if type(cards) is not list:
+            cards = [cards]
+
+        self.cards = cards + self.cards
+
+    def removeCards(self, amount=1, index=0):
+        removed = self.cards[index:index+amount]
+
+        self.cards = self.cards[index+amount:]
+        
+        return removed
+
+
+    def canReceive(self, cards):
+        if type(cards) is not list:
+            cards = [cards]
+
+        if len(cards) < 1:
+            return False
+        
+        return True
+
+
+    def canRemove(self, amount):
+        if len(self) == 0:
+            return False
+
+        if len(self) < amount:
+            return False
+        
+        return True
+
+
+    def topCard(self):
+        return self.getCard(0)
+    
+    def getCard(self, index):
+        if len(self) == 0 or index > len(self) - 1:
+            return None
+
+        return self.cards[index]
+        
+    def turnTopCardFaceUp(self):
+        if self.topCard() is not None:
+            self.topCard().faceUp = True
+
+    def checkSuit(self, amount):
+        if len(self) == 0 or amount == 1:
+            return True
+
+        if len(self) < amount:
+            return False
+
+        cardsToCheck = self.cards[:amount]
+
+        for _, card in enumerate(cardsToCheck, start=1):
+            if not card.faceUp and card.suit != self.topCard().suit:
+                return False
+            
+        return True
+    
+    def cardsAreInOrder(self, amount):
+        if len(self) == 0 or amount == 1:
+            return True
+
+        if len(self) < amount:
+            return False
+        
+        cardsToCheck = self.cards[:amount]
+
+        for idx, card in enumerate(cardsToCheck, start=1):
+            if not card.faceUp and card.card != self.getCard(idx - 1).card + 1:
+                return False
+            
+        return True
+
+    def pileStackIsComplete(self, amount, rules=None):
+        if len(self) == 0:
+            return False
+        
+        if rules is None:
+            rules = self.stackCompleteRules
+
+        for rule in rules:
+            if rule(amount) == False:
+                return False
+        
+        return True
+    
+    def __len__(self):
+        return len(self.cards)
 
 class Board:
     def __init__(self):
         config = self.read_config('config.json')
 
-        self.suits = config['suits']
         self.graphic = config['graphic']
 
         self.initialDeal = config['initialDeal']
-        self.piles = [[] for _ in range(len(self.initialDeal))]
 
-        self.rank = config['rank'] # rank of the cards
-        self.numberOfCards = config['numberOfCards']
+        self.piles = [Pile() for _ in range(len(self.initialDeal))]
 
-        duplicates = self.numberOfCards//self.rank//self.suits # cards that exist multiple times 
-        
-        if duplicates == 0:
-            assert False, "Not enough cards for the given rank and suits"
-        
-        self.cards = [Card(card, suit) for _ in range(duplicates) for suit in range(self.suits) for card in range(1, self.rank+1)]
+        self.deck = Cards.Deck(
+            config['numberOfCards'], 
+            config['suits'],
+            config['rank'], 
+        )
 
-        self.completedPiles = 0
+        self.completedStacks = 0
 
         self.gameOver = False
+
+    
+
+    def winCondition(self):
+        if self.completedStacks == self.deck.amountOfCards//self.deck.rank:
+            return True
+        
+        return False
 
 
     def startGame(self):
         # shuffles the cards
-        random.shuffle(self.cards)
+        self.deck.shuffle()
 
         # creates the piles
         self.dealCards(pattern=self.initialDeal)
@@ -47,37 +146,39 @@ class Board:
 
         for i, pile in enumerate(self.piles):
             if pattern[i] > 0:
-                if len(self.cards) <= 0:
-                    self.turnOverBottomCards()
-                    return
-                pile.insert(0, self.cards.pop())
+                cardFromDeck = self.deck.deal()
 
-                self.checkPileCompletion(pile)
+                if cardFromDeck is None:
+                    pattern[i] = 0
+                    break
+                else:
+                    pile.addCards(cardFromDeck)
+
+                self.checkStackCompletion(pile)
 
                 pattern[i] -= 1
 
         if sum(pattern) != 0:
             self.dealCards(pattern=pattern)
-        
-        self.turnOverBottomCards()
+            
+        self.turnTopCardsFaceUp()
 
 
-    def turnOverBottomCards(self):
+    def turnTopCardsFaceUp(self):
         for pile in self.piles:
-            if len(pile) > 0:
-                pile[0].faceUp = True
+            pile.turnTopCardFaceUp()
+
 
     def moveCard(self, fromPile, toPile, amount):
         if not self.isMoveLegal(fromPile, toPile, amount):
             return False
-        
-        self.piles[toPile] = self.piles[fromPile][:amount] + self.piles[toPile]
-        self.piles[fromPile] = self.piles[fromPile][amount:]
 
-        if len(self.piles[fromPile]) > 0:
-            self.piles[fromPile][0].faceUp = True
+        movedCards = self.piles[fromPile].removeCards(amount)
+        self.piles[toPile].addCards(movedCards)
 
-        self.piles[toPile] = self.checkPileCompletion(self.piles[toPile])
+        self.piles[fromPile].turnTopCardFaceUp()
+
+        self.piles[toPile] = self.checkStackCompletion(self.piles[toPile])
 
         return True
 
@@ -95,11 +196,15 @@ class Board:
         return True
     
 
-    def isMoveLegal(self, fromPile, toPile, amount):
-        if fromPile < 0 or fromPile > len(self.piles) - 1: # if the pile is not in the board
+    def pileExists(self, pile):
+        if pile < 0 or pile > len(self.piles) - 1:
             return False
 
-        if toPile < 0 or toPile > len(self.piles) - 1: # if the pile is not in the board
+        return True
+
+
+    def isMoveLegal(self, fromPile, toPile, amount):
+        if not self.pileExists(fromPile) or not self.pileExists(toPile): # if the pile does not exist
             return False
 
         if fromPile == toPile: # if the pile is the same
@@ -108,50 +213,25 @@ class Board:
         if amount > len(self.piles[fromPile]): # if the amount of cards to move is greater than the amount of cards in the pile
             return False
         
-        if not self.checkSuit(self.piles[fromPile], amount): # if the suit of the cards is not the same
+        if not self.piles[fromPile].canRemove(amount): # if the pile is complete
             return False
-
-        for i in range(amount):
-            if self.piles[fromPile][i].faceUp == False:
-                return False
-
-            if i > 0 and self.piles[fromPile][i].card != self.piles[fromPile][i-1].card + 1:
-                return False
 
         if len(self.piles[toPile]) == 0:
             return True
 
-        if self.piles[fromPile][amount - 1].card + 1 == self.piles[toPile][0].card:
+        if self.piles[toPile].canReceive(self.piles[fromPile].cards[:amount]):
             return True
         
         return False
 
 
-    def checkPileCompletion(self, pile):
-        ranksum = sum([val for val in range(1, self.rank+1)])
-
-        suit = pile[0].suit
-        sumacion = 0
-
-        if self.checkSuit(pile, self.rank) == False:
-            return pile
-
-        for idx, card in enumerate(pile):
-            if idx > self.rank:
-                break
-
-            if card.faceUp == False:
-                break
-
-            sumacion += card.card
-
-        if sumacion == ranksum:
-            self.completedPiles += 1
-            pile = pile[self.rank - 1:]
-
-            if self.completedPiles == self.numberOfCards//self.rank:
-                self.gameOver = True
-
+    def checkStackCompletion(self, pile):
+        if pile.pileStackIsComplete(self.deck.rank):
+            self.completedStacks += 1
+            pile.cards = []
+        
+        if self.winCondition():
+            self.gameOver = True
 
         return pile
     

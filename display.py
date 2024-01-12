@@ -35,8 +35,8 @@ def drawBoard(board, message=""):
     pileNumber = len(board.piles)
 
     sys.stdout.write("\033[H") # move cursor to top left
-    sys.stdout.write(f"Completed piles: {board.completedPiles} \n")
-    sys.stdout.write(f"Deals left: {math.ceil(len(board.cards) / pileNumber) } \n\n")
+    sys.stdout.write(f"Completed piles: {board.completedStacks} \n")
+    sys.stdout.write(f"Deals left: {math.ceil(len(board.deck.cards) / pileNumber) } \n\n")
     
     if bool(graphic["PileNumberAtTheTop"]):
         paintPileNumber(pileNumber)
@@ -45,16 +45,18 @@ def drawBoard(board, message=""):
 
     largestPile = max([len(pile) for pile in board.piles])
 
-    reversedPiles = [pile[::-1] for pile in board.piles]
+    reversedPiles = [pile.cards[::-1] for pile in board.piles]
 
     for i in range(largestPile):
         for pile in reversedPiles:
             length = len(pile)
-            if i >= length:
+            
+            card = None if i >= length else pile[i]
+            if card == None:
                 sys.stdout.write("  ")
             else:
-                char = graphic["faces"][pile[i].card - 1] if pile[i].faceUp else graphic["back"]
-                color = graphic["suitColors"][pile[i].suit] if pile[i].faceUp else graphic["backColor"]
+                char = graphic["faces"][card.card - 1] if card.faceUp else graphic["back"]
+                color = graphic["suitColors"][card.suit] if card.faceUp else graphic["backColor"]
                 color = colors[color]
                 sys.stdout.write(f"{color}{char} ")
         sys.stdout.write("\n")
