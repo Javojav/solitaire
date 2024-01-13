@@ -43,7 +43,6 @@ class Pile:
         
         return True
 
-
     def topCard(self):
         return self.getCard(0)
     
@@ -56,49 +55,6 @@ class Pile:
     def turnTopCardFaceUp(self):
         if self.topCard() is not None:
             self.topCard().faceUp = True
-
-    def checkSuit(self, amount):
-        if len(self) == 0 or amount == 1:
-            return True
-
-        if len(self) < amount:
-            return False
-
-        cardsToCheck = self.cards[:amount]
-
-        for _, card in enumerate(cardsToCheck, start=1):
-            if not card.faceUp and card.suit != self.topCard().suit:
-                return False
-            
-        return True
-    
-    def cardsAreInOrder(self, amount):
-        if len(self) == 0 or amount == 1:
-            return True
-
-        if len(self) < amount:
-            return False
-        
-        cardsToCheck = self.cards[:amount]
-
-        for idx, card in enumerate(cardsToCheck, start=1):
-            if not card.faceUp and card.card != self.getCard(idx - 1).card + 1:
-                return False
-            
-        return True
-
-    def pileStackIsComplete(self, amount, rules=None):
-        if len(self) == 0:
-            return False
-        
-        if rules is None:
-            rules = self.stackCompleteRules
-
-        for rule in rules:
-            if rule(amount) == False:
-                return False
-        
-        return True
     
     def __len__(self):
         return len(self.cards)
@@ -110,6 +66,7 @@ class Board:
         self.graphic = config['graphic']
 
         self.initialDeal = config['initialDeal']
+        self.NormalDeal = [1 for _ in range(len(self.initialDeal))]
 
         self.piles = [Pile() for _ in range(len(self.initialDeal))]
 
@@ -123,12 +80,10 @@ class Board:
 
         self.gameOver = False
 
+
     
 
     def winCondition(self):
-        if self.completedStacks == self.deck.amountOfCards//self.deck.rank:
-            return True
-        
         return False
 
 
@@ -142,7 +97,7 @@ class Board:
 
     def dealCards(self, pattern=None):
         if pattern is None:
-            pattern = [1 for _ in range(len(self.piles))]
+            pattern = [x for x in self.NormalDeal]
 
         for i, pile in enumerate(self.piles):
             if pattern[i] > 0:
@@ -154,19 +109,26 @@ class Board:
                 else:
                     pile.addCards(cardFromDeck)
 
-                self.checkStackCompletion(pile)
-
                 pattern[i] -= 1
-
+            
         if sum(pattern) != 0:
             self.dealCards(pattern=pattern)
             
         self.turnTopCardsFaceUp()
+        self.afterDeal()
 
+
+    def afterDeal(self):
+        pass
+    
 
     def turnTopCardsFaceUp(self):
         for pile in self.piles:
             pile.turnTopCardFaceUp()
+
+
+    def afterMove(self, fromPile, toPile, amount):
+        pass
 
 
     def moveCard(self, fromPile, toPile, amount):
@@ -178,21 +140,8 @@ class Board:
 
         self.piles[fromPile].turnTopCardFaceUp()
 
-        self.piles[toPile] = self.checkStackCompletion(self.piles[toPile])
+        self.afterMove(fromPile, toPile, amount)
 
-        return True
-
-
-    def checkSuit(self, pile, amount):
-        suit = pile[0].suit
-
-        if len(pile) < amount:
-            return False
-
-        for i in range(amount):
-            if pile[i].suit != suit:
-                return False
-            
         return True
     
 
@@ -216,26 +165,11 @@ class Board:
         if not self.piles[fromPile].canRemove(amount): # if the pile is complete
             return False
 
-        if len(self.piles[toPile]) == 0:
-            return True
-
         if self.piles[toPile].canReceive(self.piles[fromPile].cards[:amount]):
             return True
         
         return False
-
-
-    def checkStackCompletion(self, pile):
-        if pile.pileStackIsComplete(self.deck.rank):
-            self.completedStacks += 1
-            pile.cards = []
-        
-        if self.winCondition():
-            self.gameOver = True
-
-        return pile
     
-
     def read_config(self, config_file):
         with open(config_file) as f:
             config = json.load(f)

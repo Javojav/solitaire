@@ -1,7 +1,7 @@
 {
     "suits": 1,
-    "rank": 13,
-    "numberOfCards": 104,
+    "rank": 1,
+    "numberOfCards": 6,
     "initialDeal": [6, 6, 6, 6, 5, 5, 5, 5, 5, 5],
     "graphic": {
         "suitColors": [
