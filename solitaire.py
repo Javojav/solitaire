@@ -1,76 +1,38 @@
-import SpiderBoard as Board
-import display
+import games.spider.spider 
+
+def displayMenu():
+    print("Welcome to Solitaire!")
+    print("1. Spider Solitaire")
+    print("q. Quit")
+    print("")
 
 
-def getInputs():
-    inputs = input("")
-
-    if inputs == "r":
-        return "restart", None, None, None
-    
-    if inputs == "h":
-        return "help", None, None, None
-    
-    if inputs == "q":
-        return "quit", None, None, None
-    
-    if inputs == "d":
-        return "deal", None, None, None
-
-    if inputs.count(" ") >= 1:
-        
-        if inputs.count(" ") == 1:
-            moveFrom, moveTo = inputs.split(" ")
-            amount = "1"
-        else:
-            moveFrom, moveTo, amount = inputs.split(" ")
-
-        if moveFrom.isdigit() and moveTo.isdigit() and amount.isdigit():
-            return "move", int(moveFrom), int(moveTo), int(amount)
-
-    return "error", None, None, None
+def quit():
+    exit()
 
 
-def controls(board):
-    action, fromPile, toPile, amount = getInputs()
-    message = ""
+def menuInput():
+    choice = input("Enter your choice: ")
 
-    ret = True
-
-    if action == "restart":
-        board = Board.SpiderBoard()
-        board.startGame()
-
-    if action == "help":
-        display.drawHelp()
-        input()
-
-    if action == "deal":
-        board.dealCards()
-    elif action == "move":
-        ret = board.moveCard(fromPile, toPile, amount)
-    
-    if action == "error" or ret == False:
-        message = "Invalid!"
-
-    if action == "quit":
-        exit()
-
-    return message, board
+    if choice == "1":
+        return games.spider.spider.spiderMain, ["games/spider/config.json"]
+    elif choice == "q":
+        return quit, None
+    else:
+        print("Invalid choice")
+        return main, None
 
 
 def main():
-    board = Board.SpiderBoard()
-    board.startGame()
-    message = ""
-
-
-    while not board.gameOver:
-        display.clearScreen()
-        display.drawBoard(board, message)
-        message, board = controls(board)
+    displayMenu()
     
-    print("K pro")
+    execute, args = menuInput()
+
+    if args is not None:
+        execute(*args)
+    else:
+        execute()
+    
 
 if __name__ == '__main__':
     main()

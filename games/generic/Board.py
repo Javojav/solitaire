@@ -1,4 +1,4 @@
-import Cards
+import games.generic.Cards as Cards
 import json
 import random
 
@@ -60,8 +60,8 @@ class Pile:
         return len(self.cards)
 
 class Board:
-    def __init__(self):
-        config = self.read_config('config.json')
+    def __init__(self, config_file):
+        config = self.read_config(config_file)
 
         self.graphic = config['graphic']
 

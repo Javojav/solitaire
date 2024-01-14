@@ -1,4 +1,4 @@
-import Board
+from games.generic import Board as Board
 
 class SpiderPile(Board.Pile):
     def __init__(self):
@@ -75,8 +75,8 @@ class SpiderPile(Board.Pile):
     
 
 class SpiderBoard(Board.Board):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config_file="games/spider/config.json"):
+        super().__init__(config_file)
         self.piles = [SpiderPile() for _ in range(10)]
 
 
@@ -106,4 +106,3 @@ class SpiderBoard(Board.Board):
             self.gameOver = True
 
         return pile
-    
