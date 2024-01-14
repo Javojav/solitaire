@@ -15,7 +15,10 @@ class SpiderPile(Pile.Pile):
         if len(self) == 0:
             return True
         
-        if cards[-1].card + 1 == self.topCard().card:
+        if cards[-1].card + 1 != self.topCard().card:
+            return False
+        
+        if cards[-1].suit == self.topCard().suit:
             return True
         
         return False
@@ -26,7 +29,7 @@ class SpiderPile(Pile.Pile):
         
         if self.pileStackIsComplete(amount, self.stackCompleteRules):
             return True
-        
+            
         return False
     
     def checkSuit(self, amount):

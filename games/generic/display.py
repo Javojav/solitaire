@@ -19,6 +19,9 @@ class Display():
 
         self.board = board
         self.graphic = self.board.graphic
+        self.wholePiles = self.drawWholePiles()
+        self.topCardPiles = self.drawJustTopCard()
+        
 
     def clearScreen(self):
         if sys.platform == 'win32':
@@ -39,7 +42,7 @@ class Display():
         self.clearScreen()
         
         self.drawGameInfo()
-        
+
         if self.graphic["PileNumberAtTheTop"]:
             self.paintPileNumber(len(self.board.piles))
         
@@ -64,16 +67,30 @@ class Display():
     def drawGameInfo(self):
         sys.stdout.write("\033[H") # move cursor to top left
 
+    def drawJustTopCard(self):
+        return []
+
+
+    def drawWholePiles(self):
+        return [pile for pile in self.board.piles]
+
+
     def drawBoard(self):
-        largestPile = max([len(pile) for pile in self.board.piles])
+        largestPile = max([len(pile) for pile in self.wholePiles])
 
         reversedPiles = [pile.cards[::-1] for pile in self.board.piles]
 
         for i in range(largestPile):
-            for pile in reversedPiles:
+            for idx, pile in enumerate(self.board.piles):
                 length = len(pile)
+
+                drawIndex = length - 1 if pile in self.topCardPiles else i
+
+                card = None if i >= length else reversedPiles[idx][drawIndex]
                 
-                card = None if i >= length else pile[i]
+                if i != 0 and pile in self.topCardPiles:
+                    card = None
+                
                 if card == None:
                     sys.stdout.write("  ")
                 else:

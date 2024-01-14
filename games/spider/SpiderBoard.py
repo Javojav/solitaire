@@ -5,7 +5,7 @@ class SpiderBoard(Board.Board):
     def __init__(self, config_file="games/spider/config.json"):
         super().__init__(config_file)
         self.piles = [SpiderPile.SpiderPile() for _ in range(len(self.initialDeal))]
-
+        
 
     def winCondition(self):
         if self.completedStacks == self.deck.amountOfCards//self.deck.rank:
@@ -19,7 +19,6 @@ class SpiderBoard(Board.Board):
 
 
     def afterDeal(self):
-
         for pile in self.piles:
             self.checkStackCompletion(pile)
 

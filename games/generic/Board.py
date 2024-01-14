@@ -5,19 +5,20 @@ import random
 
 class Board:
     def __init__(self, config_file):
-        config = self.read_config(config_file)
+        self.config = self.read_config(config_file)
+        self.config_file = config_file
 
-        self.graphic = config['graphic']
+        self.graphic = self.config['graphic']
 
-        self.initialDeal = config['initialDeal']
+        self.initialDeal = self.config['initialDeal']
         self.NormalDeal = [1 for _ in range(len(self.initialDeal))]
 
         self.piles = [Pile.Pile() for _ in range(len(self.initialDeal))]
 
         self.deck = Cards.Deck(
-            config['numberOfCards'], 
-            config['suits'],
-            config['rank'], 
+            self.config['numberOfCards'], 
+            self.config['suits'],
+            self.config['rank'], 
         )
 
         self.completedStacks = 0
@@ -40,6 +41,9 @@ class Board:
     def dealCards(self, pattern=None):
         if pattern is None:
             pattern = [x for x in self.NormalDeal]
+
+        if len(pattern) != len(self.piles):
+            pattern.extend([0 for _ in range(len(self.piles) - len(pattern))])
 
         for i, pile in enumerate(self.piles):
             if pattern[i] > 0:

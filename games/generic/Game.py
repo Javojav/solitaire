@@ -46,7 +46,9 @@ class Game():
         ret = True
 
         if action == "restart":
-            board = self.boardConstructor("config.json")
+            file = board.config_file
+            board = self.boardConstructor(file)
+            disp = self.displayConstructor(board)
             board.startGame()
 
         if action == "help":
