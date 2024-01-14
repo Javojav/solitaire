@@ -38,10 +38,11 @@ class Display():
 
         self.clearScreen()
         
+        self.drawGameInfo()
+        
         if self.graphic["PileNumberAtTheTop"]:
             self.paintPileNumber(len(self.board.piles))
         
-        self.drawGameInfo()
         
         self.drawBoard()
 

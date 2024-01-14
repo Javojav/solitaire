@@ -80,4 +80,4 @@ class Game():
 
 if __name__ == "__main__":
     game = Game(Board.Board, Display.Display)
-    game.run()
+    game.run(configFile="config.json")
