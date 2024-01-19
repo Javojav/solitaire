@@ -13,7 +13,33 @@ class klondileBoard(Board.Board):
 
 
     def winCondition(self):
-        if self.completedStacks == self.deck.rank:
+        if self.completedStacks == self.deck.suits:
             return True
         
         return False
+    
+
+    def afterMove(self, fromPile, toPile, amount):
+        return self.checkPiles()
+
+
+    def checkPiles(self):
+        suitPiles = [pile for pile in self.piles if type(pile) == klondilePile.suitPile]
+        
+        for pile in suitPiles:
+            if pile.pileStackIsComplete(self.deck.rank):
+                self.completedStacks += 1
+            
+            if self.winCondition():
+                self.gameOver = True
+
+        return self.piles
+
+
+    def dealCards(self, pattern=None):
+        if len(self.deck) == 0:
+            dealPile = self.piles[0]
+            self.deck.addCards(dealPile.cards)
+            dealPile.removeCards(len(dealPile))
+
+        return super().dealCards(pattern)

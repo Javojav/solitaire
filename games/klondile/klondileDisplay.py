@@ -1,9 +1,17 @@
 import games.generic.display as display
 import games.klondile.klondilePile as klondilePile
+import sys
 
 class klondileDisplay(display.Display):
     def __init__(self, board):
         super().__init__(board)
+
+
+    def drawGameInfo(self):
+        super().drawGameInfo()
+        sys.stdout.write(f"Completed Stacks: {self.board.completedStacks} \n")
+        sys.stdout.write(f"Deals left: {len(self.board.deck.cards)} \n\n")
+
 
     def drawJustTopCard(self):
         topCardPiles = []

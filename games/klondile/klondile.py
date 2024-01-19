@@ -12,7 +12,6 @@ from games.generic import Game
 def klondileMain(config_file):
     game = Game.Game(KlondileBoard.klondileBoard, klondileDisplay.klondileDisplay)
     game.run(config_file)
-    print("Work in progress")
     
 if __name__ == "__main__":
     klondileMain("config.json")

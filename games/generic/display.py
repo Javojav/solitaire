@@ -30,10 +30,18 @@ class Display():
             os.system('clear')
 
     def paintPileNumber(self, Numbers):
-        for idx in range(Numbers):
-            sys.stdout.write(f"{idx} ")
+        numberList = [str(idx) for idx in range(Numbers)]
 
-        sys.stdout.write("\n")
+        longestNum = numberList[-1]
+
+        for row in range(len(longestNum)):
+            for num in numberList:
+                if row + 1 > len(num):
+                    sys.stdout.write("  ")
+                else:
+                    sys.stdout.write(f"{num[row]} ")
+            sys.stdout.write("\n")
+                    
         sys.stdout.write("\n")
 
     def drawGame(self, board, message=""):

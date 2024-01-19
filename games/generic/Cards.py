@@ -33,5 +33,13 @@ class Deck:
         
         return [self.cards.pop() for _ in range(amount)]
     
+
+    def addCards(self, cards):
+        if type(cards) is not list:
+            cards = [cards]
+
+        self.cards = cards + self.cards
+
+    
     def __len__(self):
         return len(self.cards)
